@@ -8,6 +8,8 @@ namespace TelegramCropper.Handlers
 {
     internal class MessageHandler : BaseHandler
     {
+        private static readonly CommandsFactory _commandsFactory = new CommandsFactory();
+
         public async override Task Handle(ITelegramBotClient botClient, Update update, 
             IChatRepo<IChatTask> chats, CancellationToken cancellationToken)
         {
@@ -18,7 +20,7 @@ namespace TelegramCropper.Handlers
             if (comAndArgs == null)
                 return;
 
-            var command = CommandsFactory.GetCommand(comAndArgs.CommnadName);
+            var command = _commandsFactory.GetCommand(comAndArgs.CommnadName);
 
             if (command == null)
                 return;

@@ -62,7 +62,7 @@ namespace TelegramCropper.Commands
 
             if (args.Length == 1)
                 w = h;
-            else if (!int.TryParse(args[0], out w))
+            else if (!int.TryParse(args[1], out w))
                 return false;
 
             size.Height = h;

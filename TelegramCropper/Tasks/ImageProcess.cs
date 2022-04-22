@@ -89,6 +89,8 @@ namespace TelegramCropper.Tasks
                 throw new ChatTaskArgumentsException($"To much tiles - {rects.Count}. Max - {_maxTiles}");
 
             int iName = 0;
+
+            //TODO : Очень тяжело GC и файловой системе. Зарефакторить
             foreach (var pos in rects)
                 using (var tile = img.Clone(x => x.Crop(new Rectangle(pos.X, pos.Y, pos.Width, pos.Height))))
                 {

@@ -28,7 +28,6 @@ Utils.ConfigureCommands(bot);
 
 IChatRepo<IChatTask> chats = new ChatTaskRepo(config.MaxTasksLifeTimeSec,
     config.MaxTaskProcessTimeoutSec);
-CommandsFactory.Cache();
 
 JsonSerializerOptions jsonOpt = new JsonSerializerOptions()
 { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
