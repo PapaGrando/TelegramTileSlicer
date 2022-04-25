@@ -100,8 +100,6 @@ namespace TelegramCropper.Tasks
                     tile.SaveAsPng($"{dirPath}{iName}.png");
                     iName++;
                 }
-
-            GC.Collect();
         }
 
         private TileTask FixTileTask(TileTask tt)

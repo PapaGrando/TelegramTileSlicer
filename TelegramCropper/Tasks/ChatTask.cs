@@ -70,8 +70,6 @@ namespace TelegramCropper.Tasks
             }
             finally
             {
-                cansTok.Dispose();
-                imageProcess.Dispose();
                 IsProcessing = false;
             }
         }
