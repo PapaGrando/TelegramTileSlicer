@@ -17,7 +17,7 @@ namespace TelegramCropper.Commands
                 "Im tile-slicer bot. I can slice tilesets and applies some filters" +
                 "\n\nUse /help for info";
 
-        public override async Task<bool> Run(ITelegramBotClient botClient, IChatRepo<IChatTask> chatsList,
+        public override async Task<bool> Run(ITelegramBotClient botClient, IChatRepo<IChatJob> chatsList,
             CommandData commandData, Message message)
         {
             if (System.IO.File.Exists(EXAMPLE_PATH))

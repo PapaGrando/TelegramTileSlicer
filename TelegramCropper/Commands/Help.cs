@@ -11,7 +11,7 @@
              "STEP 2.5) (Optional)\n" +
              "Filters. Available:\n" +
              "/Blackwhite /Sepia /Pixelate /OilPaint /Blur\n" +
-             "Applies alternately\n\n" +
+             "Applied in order\n\n" +
              "Use /Status to check added filters and tile size\n\n" +
              "STEP 3) Drop your .png tileset in chat (Without Compression) and Send\n\n" +
              "STEP 4) Wait for Zip archive with .png files\n\n" +

@@ -1,25 +1,19 @@
 ﻿using SixLabors.ImageSharp.Processing;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using TelegramCropper.Interfaces;
-using TelegramCropper;
-using TelegramCropper.Tasks;
+using TelegramCropper.Jobs;
 
 namespace TelegramCropper.Commands.Filter
 {
     public class BlackWhite : FilterBaseCommand
     {
         public override string CommandHelp => "Makes picture Black and White";
-        public override async Task<bool> Run(ITelegramBotClient botClient, IChatRepo<IChatTask> chatsList,
+        public override async Task<bool> Run(ITelegramBotClient botClient, IChatRepo<IChatJob> chatsList,
             CommandData commandData, Message message)
         {
             await TryAddFilterOrShowHelp(botClient, chatsList, message,
-                new FilterTask("Black and white filter", (x) => x.BlackWhite()));
+                new FilterJob("Black and white filter", (x) => x.BlackWhite()));
 
             return true;
         }

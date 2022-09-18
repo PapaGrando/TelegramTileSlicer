@@ -4,6 +4,6 @@
     {
         public override string CommandHelp => "Available:\n" +
              "/Blackwhite /Sepia /Pixelate /OilPaint /Blur\n" +
-             "Applies alternately";
+             "Applied in order";
     }
 }

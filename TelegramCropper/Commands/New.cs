@@ -11,7 +11,7 @@ namespace TelegramCropper.Commands
             "Creates settings for new tileset\n" +
             "Old settings will resets";
 
-        public override async Task<bool> Run(ITelegramBotClient botClient, IChatRepo<IChatTask> chatsList,
+        public override async Task<bool> Run(ITelegramBotClient botClient, IChatRepo<IChatJob> chatsList,
             CommandData commandData, Message message)
         {
             var ct = chatsList.TryGetChat(message.Chat.Id);

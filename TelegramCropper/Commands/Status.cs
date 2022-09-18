@@ -8,7 +8,7 @@ namespace TelegramCropper.Commands
     public class Status : BaseCommand
     {
         public override string CommandHelp => "Displays current status of task.";
-        public override async Task<bool> Run(ITelegramBotClient botClient, IChatRepo<IChatTask> chatsList,
+        public override async Task<bool> Run(ITelegramBotClient botClient, IChatRepo<IChatJob> chatsList,
             CommandData commandData, Message message)
         {
             var chatTask = chatsList.TryGetChat(message.Chat.Id);
@@ -25,12 +25,12 @@ namespace TelegramCropper.Commands
             return true;
         }
 
-        private string MakeChatTaskInfo(IChatTask task)
+        private string MakeChatTaskInfo(IChatJob task)
         {
             var sb = new StringBuilder();
             sb.Append("Task configuration:\n");
             sb.AppendLine("=========");
-            sb.Append("Filters: (applied in sequence)\n");
+            sb.Append("Filters: (Applied in order)\n");
 
             //filter info
             if (task.FiltersQueue.Any())
@@ -54,9 +54,9 @@ namespace TelegramCropper.Commands
 
             sb.AppendLine("=========");
             //is Processing?
-            sb.AppendLine(task.IsProcessing ? "Processing..." : "Waiting File...\n");
+            sb.AppendLine(task.IsBusy ? "Processing..." : "Waiting File...\n");
             sb.AppendLine("Use .png file. Max 4Mp, 4MB");
-            sb.AppendLine("Max tiles - 500");
+            sb.AppendLine("Max tiles - 1000");
 
             return sb.ToString();
         }

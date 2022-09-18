@@ -7,8 +7,8 @@ namespace TelegramCropper.Commands.Filter
 {
     public abstract class FilterBaseCommand : BaseCommand, IFilterCommand
     {
-        protected async Task TryAddFilterOrShowHelp(ITelegramBotClient bot, IChatRepo<IChatTask> chatsList,
-            Message message, IFilterTask todo)
+        protected async Task TryAddFilterOrShowHelp(ITelegramBotClient bot, IChatRepo<IChatJob> chatsList,
+            Message message, IFilterJob todo)
         {
             var chattask = chatsList.TryGetChat(message.Chat.Id);
             if (chattask is null)
