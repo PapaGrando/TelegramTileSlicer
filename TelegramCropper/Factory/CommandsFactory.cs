@@ -3,7 +3,7 @@ using TelegramCropper.Interfaces;
 
 namespace TelegramCropper.Factory
 {
-    internal class CommandsFactory
+    internal class CommandsFactory : ICommandsFactory
     {
         private IEnumerable<Type> _commandsTypes;
         public CommandsFactory()
