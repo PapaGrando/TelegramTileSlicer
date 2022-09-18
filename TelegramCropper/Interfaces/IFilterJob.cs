@@ -2,7 +2,7 @@
 
 namespace TelegramCropper.Interfaces
 {
-    public interface IFilterTask
+    public interface IFilterJob
     {
         string Name { get; }
         Action<IImageProcessingContext> FilterAction { get; }
