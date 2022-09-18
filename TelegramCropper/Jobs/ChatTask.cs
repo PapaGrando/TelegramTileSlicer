@@ -2,14 +2,14 @@
 using TelegramCropper.Exceptions;
 using TelegramCropper.Interfaces;
 
-namespace TelegramCropper.Tasks
+namespace TelegramCropper.Jobs
 {
-    public class ChatTask : IChatTask, IDisposable
+    public class ChatJob : IChatJob, IDisposable
     {
         public event EventHandler LifeTimeElapsed;
-        public bool IsProcessing { get; private set; }
-        public IReadOnlyCollection<IFilterTask> FiltersQueue => _filtersQueue;
-        public TileTask TileTask
+        public bool IsBusy { get; private set; }
+        public IReadOnlyCollection<IFilterJob> FiltersQueue => _filtersQueue;
+        public TileJob TileTask
         {
             get
             {
@@ -17,14 +17,14 @@ namespace TelegramCropper.Tasks
                 return _tileTask;
             }
         }
-        private TileTask _tileTask;
-        private ConcurrentQueue<IFilterTask> _filtersQueue;
+        private TileJob _tileTask;
+        private ConcurrentQueue<IFilterJob> _filtersQueue;
         private System.Timers.Timer _timer;
         private int _taskLifetimeSec;
         private int _imageProcessTimeoutSec;
         private bool disposedValue;
 
-        public ChatTask(int lifeTimeSec, int imageProcessTimeout)
+        public ChatJob(int lifeTimeSec, int imageProcessTimeout)
         {
             if (lifeTimeSec < 1 ||
                 imageProcessTimeout < 1)
@@ -36,19 +36,19 @@ namespace TelegramCropper.Tasks
             _timer = new System.Timers.Timer();
             _timer.Elapsed += (s, e) => LifeTimeElapsed?.Invoke(this, EventArgs.Empty);
 
-            IsProcessing = false;
-            _tileTask = new TileTask();
-            _filtersQueue = new ConcurrentQueue<IFilterTask>();
+            IsBusy = false;
+            _tileTask = new TileJob();
+            _filtersQueue = new ConcurrentQueue<IFilterJob>();
 
             TimerReset(lifeTimeSec);
         }
 
         public async Task<Stream> ProcessTask(Stream imageStream, string nameID)
         {
-            if (IsProcessing)
+            if (IsBusy)
                 throw new ChatTaskBusyException();
 
-            IsProcessing = true;
+            IsBusy = true;
 
             TimerReset(_taskLifetimeSec);
 
@@ -63,20 +63,15 @@ namespace TelegramCropper.Tasks
 
                 return t.GetAwaiter().GetResult();
             }
-            catch (ChatTaskTimeoutException ex)
-            {
-                cansTok.Cancel();
-                throw ex;
-            }
             finally
             {
-                IsProcessing = false;
+                IsBusy = false;
             }
         }
 
-        public void AddFilter(IFilterTask filterAct)
+        public void AddFilter(IFilterJob filterAct)
         {
-            if (IsProcessing)
+            if (IsBusy)
                 throw new ChatTaskBusyException();
 
             _filtersQueue.Enqueue(filterAct);
@@ -97,7 +92,7 @@ namespace TelegramCropper.Tasks
             if (disposedValue || !disposing)
                 return;
 
-            IsProcessing = false;
+            IsBusy = false;
 
             _timer.Stop();
             _timer.Dispose();

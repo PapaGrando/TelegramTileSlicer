@@ -5,7 +5,7 @@ using System.IO.Compression;
 using TelegramCropper.Exceptions;
 using TelegramCropper.Interfaces;
 
-namespace TelegramCropper.Tasks
+namespace TelegramCropper.Jobs
 {
     //TODO : Сделать с сохраниние файлов без использования файловой системы
     public class ImageProcess : IDisposable
@@ -25,8 +25,8 @@ namespace TelegramCropper.Tasks
             _cansTok = token;
         }
 
-        public Stream ProcessAction(Stream imageStream, TileTask tiletask,
-            IReadOnlyCollection<IFilterTask> filtersQueue)
+        public Stream ProcessAction(Stream imageStream, TileJob tiletask,
+            IReadOnlyCollection<IFilterJob> filtersQueue)
         {
             imageStream.Position = 0;
             using (var image = Image.Load(imageStream, new PngDecoder()))
@@ -76,7 +76,7 @@ namespace TelegramCropper.Tasks
         }
 
         private void SliceAndSaveInTempDir(Image img, string chatId,
-            string dirPath, TileTask tileTask)
+            string dirPath, TileJob tileTask)
         {
             if (tileTask.Sizes == (0, 0))
             {
@@ -102,7 +102,7 @@ namespace TelegramCropper.Tasks
                 }
         }
 
-        private TileTask FixTileTask(TileTask tt)
+        private TileJob FixTileTask(TileJob tt)
         {
             if (tt.Height == 0 ||
                 tt.Width == 0)

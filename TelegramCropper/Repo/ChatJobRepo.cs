@@ -1,27 +1,27 @@
 ﻿using System.Collections.Concurrent;
 using TelegramCropper.Interfaces;
-using TelegramCropper.Tasks;
+using TelegramCropper.Jobs;
 
 namespace TelegramCropper.Repo
 {
-    public class ChatTaskRepo : IChatRepo<IChatTask>
+    public class ChatJobRepo : IChatRepo<IChatJob>
     {
-        public IReadOnlyDictionary<long, IChatTask> ChatTasks => _chatTasks;
-        private ConcurrentDictionary<long, IChatTask> _chatTasks;
+        public IReadOnlyDictionary<long, IChatJob> ChatTasks => _chatTasks;
+        private ConcurrentDictionary<long, IChatJob> _chatTasks;
         private int _taskLifetimeSec = 300;
         private int _imageProcessTimeoutSec = 60;
 
-        public ChatTaskRepo(int taskLifetime, int processTimeout)
+        public ChatJobRepo(int taskLifetime, int processTimeout)
         {
             _taskLifetimeSec = taskLifetime > 0 ? taskLifetime : _taskLifetimeSec;
             _imageProcessTimeoutSec = processTimeout > 0 ? processTimeout : _imageProcessTimeoutSec;
 
-            _chatTasks = new ConcurrentDictionary<long, IChatTask>();
+            _chatTasks = new ConcurrentDictionary<long, IChatJob>();
         }
 
-        public IChatTask AddOrUpdateChat(long id)
+        public IChatJob AddOrUpdateChat(long id)
         {
-            var ct = new ChatTask(_taskLifetimeSec, _imageProcessTimeoutSec);
+            var ct = new ChatJob(_taskLifetimeSec, _imageProcessTimeoutSec);
 
             ct.LifeTimeElapsed += (sender, e) => DeleteChat(id);
 
@@ -37,7 +37,7 @@ namespace TelegramCropper.Repo
         public bool HasChat(long id) =>
             _chatTasks.ContainsKey(id);
 
-        public IChatTask? TryGetChat(long id) =>
+        public IChatJob? TryGetChat(long id) =>
             _chatTasks.TryGetValue(id, out var chatTask) ? chatTask : null;
 
         public bool DeleteChat(long id)

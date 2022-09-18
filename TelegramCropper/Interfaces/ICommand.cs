@@ -17,7 +17,7 @@ namespace TelegramCropper.Interfaces
         /// <returns>Success or not/returns>
         /// <exception cref="BaseCommandException"/>
         Task<bool> Run(ITelegramBotClient botClient,
-            IChatRepo<IChatTask> chatList,
+            IChatRepo<IChatJob> chatList,
             CommandData commandData, Message message);
     }
 }

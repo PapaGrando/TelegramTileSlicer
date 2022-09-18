@@ -8,14 +8,23 @@ namespace TelegramCropper.Handlers
 {
     internal class MessageHandler : BaseHandler
     {
-        private static readonly CommandsFactory _commandsFactory = new CommandsFactory();
+        private readonly ICommandsFactory _commandsFactory;
 
-        public async override Task Handle(ITelegramBotClient botClient, Update update, 
-            IChatRepo<IChatTask> chats, CancellationToken cancellationToken)
+        public MessageHandler(ICommandsFactory commandsFactory)
         {
+            _commandsFactory = commandsFactory;
+        }
 
+        public async override Task Handle(
+            ITelegramBotClient botClient, Update update, 
+            IChatRepo<IChatJob> chats, CancellationToken cancellationToken )
+        {
             var message = update.Message;
-            var comAndArgs = Utils.ParseCommand(message.Text);
+
+            if (message is null)
+                return;
+
+            var comAndArgs = message.ParseCommand();
 
             if (comAndArgs == null)
                 return;
@@ -33,11 +42,6 @@ namespace TelegramCropper.Handlers
             catch (BaseCommandException ex)
             {
                 await botClient.SendTextMessageAsync(message.Chat.Id, ex.Message);
-            }
-            //unknown ex
-            catch (Exception ex)
-            {
-                Console.WriteLine($"\nMesage ERROR - {ex}");
             }
         }
     }

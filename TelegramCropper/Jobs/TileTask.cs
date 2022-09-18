@@ -1,8 +1,8 @@
 ﻿using TelegramCropper.Exceptions;
 
-namespace TelegramCropper.Tasks
+namespace TelegramCropper.Jobs
 {
-    public class TileTask
+    public class TileJob
     {
         public const int MIN_SLICE_SIZE = 4;
         public const int MAX_SLICE_SIZE = 4096;

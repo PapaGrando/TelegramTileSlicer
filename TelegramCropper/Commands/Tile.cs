@@ -17,7 +17,7 @@ namespace TelegramCropper.Commands
         private const int _MIN_ARGS_COUNT = 1;
         private const int _MAX_ARGS_COUNT = 2;
 
-        public override async Task<bool> Run(ITelegramBotClient botClient, IChatRepo<IChatTask> chatList,
+        public override async Task<bool> Run(ITelegramBotClient botClient, IChatRepo<IChatJob> chatList,
             CommandData commandData, Message message)
         {
             var task = chatList.TryGetChat(message.Chat.Id);

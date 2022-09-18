@@ -1,94 +1,63 @@
 ﻿using Telegram.Bot;
 using Telegram.Bot.Types;
 using TelegramCropper.Commands;
-using TelegramCropper.Interfaces;
 
 namespace TelegramCropper
 {
     public static class Utils
     {
-        public static CommandData ParseCommand(string message)
+        public static CommandData? ParseCommand(this Message msg)
         {
-            if (message == null ||
-                message.Length < 2 || //with slash
-                !message.StartsWith('/'))
+            var text = msg.Text;
+            if (text == null ||
+                text.Length < 2 || //with slash
+                !text.StartsWith('/'))
                 return null;
 
-            var mesArr = message.Split(' ');
-            CommandData commandData = null;
+            var mesArr = text.Split(' ');
+            CommandData? commandData = null;
 
             if (mesArr.Length > 0)
+            {
                 commandData = new CommandData()
                 {
                     CommnadName = mesArr[0].TrimStart('/'),
                     Args = Array.Empty<string>()
                 };
 
-            if (mesArr.Length > 1)
-                commandData.Args = mesArr.Skip(1).ToArray();
-
+                if (mesArr.Length > 1)
+                    commandData.Args = mesArr.Skip(1).ToArray();
+            }
             return commandData;
         }
 
-        public static void ConfigureCommands(ITelegramBotClient bot)
+        public static void ConfigureCommands(this TelegramBotClient bot)
         {
             BotCommand[] coms = new[]
             {
-                new BotCommand() { Command = "start", Description = "Greetings!" },
-                new BotCommand() { Command = "help", Description = "How it to use?" },
-                new BotCommand() { Command = "new", Description = "New task, reset old" },
-                new BotCommand() { Command = "status", Description = "Check status current task" },
+                new BotCommand() { Command = "start",   Description = "Greetings!" },
+                new BotCommand() { Command = "help",    Description = "How it to use?" },
+                new BotCommand() { Command = "new",     Description = "New task, reset old" },
+                new BotCommand() { Command = "status",  Description = "Check status current task" },
                 new BotCommand() { Command = "filters", Description = "Available filters" },
                 new BotCommand() { Command = "credits", Description = "Author info" }
             };
             bot.SetMyCommandsAsync(coms);
         }
 
-        public async static Task<bool> ChecksForDocument(ITelegramBotClient bot,
-            long chatId, IChatTask? chatTask, string mime)
-        {
-            if (chatTask is null)
-            {
-                await bot.SendTextMessageAsync(chatId, "First create config by /new before upload\n\n /help");
-                return false;
-            }
-
-            if (chatTask.IsProcessing)
-            {
-                await bot.SendTextMessageAsync(chatId, "Task processing... Wait");
-                return false;
-            }
-
-            if (mime != "image/png")
-            {
-                await bot.SendTextMessageAsync(chatId, "Currently only .PNG is supported. :(");
-                return false;
-            }
-
-            return true;
-        }
-
-        public static bool CheckConfig(Config conf)
+        public static void CheckConfig(this Config conf)
         {
             if (conf.ApiKey.Length == 0)
-            {
-                Console.WriteLine("Paste the Api-key from BotFather into the config.json file");
-                return false;
-            }
+                throw new ArgumentException("Paste the Api-key from BotFather into the appsettings.json file");
 
             if (conf.MaxTaskProcessTimeoutSec < 1)
-            {
-                Console.WriteLine("MaxTaskProcessTimeoutSec must be greater than 1");
-                return false;
-            }
+                throw new ArgumentException("MaxTaskProcessTimeoutSec must be greater than 1");
 
             if (conf.MaxTasksLifeTimeSec <= conf.MaxTaskProcessTimeoutSec)
-            {
-                Console.WriteLine("MaxTasksLifeTimeSec must be greater than MaxTaskProcessTimeoutSec!");
-                return false;
-            }
+                throw new ArgumentException("MaxTasksLifeTimeSec must be greater than MaxTaskProcessTimeoutSec!");
 
-            return true;
+            if (conf.HostAddress.Length == 0)
+                throw new ArgumentException("Paste the HostAdress from Ngrok(or your service) into the appsettings.json file");
         }
     }
 }

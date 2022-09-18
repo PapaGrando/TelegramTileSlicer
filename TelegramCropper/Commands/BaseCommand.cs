@@ -8,7 +8,7 @@ namespace TelegramCropper.Commands
     {
         public abstract string CommandHelp { get; }
         public virtual async Task<bool> Run(ITelegramBotClient botClient,
-            IChatRepo<IChatTask> chatList,
+            IChatRepo<IChatJob> chatList,
             CommandData commandData, Message message)
         {
             await botClient.SendTextMessageAsync(message.Chat, CommandHelp);

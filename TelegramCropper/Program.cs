@@ -1,66 +1,48 @@
-п»їusing Telegram.Bot;
-using Telegram.Bot.Extensions.Polling;
-using Telegram.Bot.Types;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Telegram.Bot;
+using TelegramCropper;
 using TelegramCropper.Factory;
 using TelegramCropper.Interfaces;
-using TelegramCropper;
 using TelegramCropper.Repo;
-using TelegramCropper.Handlers;
-using Telegram.Bot.Types.Enums;
+using TelegramCropper.Services;
 
-//StartUp configuration (void Main())
+//Этот бот был перенесен с LongPolling (v 0.0.1) на Webhooks 
+//Старую архитектуру на Commands решено было не трогать
 
-Console.WriteLine("Init...");
+//TODO: Пофиксить бардак с DI
+//TODO: Вынести текст комманд в какой нить конфиг
+//TODO: Добавить еще параметров в Config 
+//TODO: Добавить фильтров и параметры к ним
 
-var config = JsonSerializer.Deserialize<Config>(System.IO.File.ReadAllText("config.json"));
+var builder = WebApplication.CreateBuilder(args);
 
-if (!Utils.CheckConfig(config))
-{
-    Console.WriteLine("Error in Config");
-    Console.ReadKey();
-    return;
-}
+var botConfig = builder.Configuration.GetSection("Config").Get<Config>();
+botConfig.CheckConfig();
 
-ITelegramBotClient bot = new TelegramBotClient(config.ApiKey);
-Utils.ConfigureCommands(bot);
+builder.Services.AddHostedService<ConfigureWebhook>();
 
-IChatRepo<IChatTask> chats = new ChatTaskRepo(config.MaxTasksLifeTimeSec,
-    config.MaxTaskProcessTimeoutSec);
+builder.Services.AddHttpClient("TelegramBot")
+    .AddTypedClient<ITelegramBotClient>((httpClient) => 
+    {
+        var bot = new TelegramBotClient(botConfig.ApiKey, httpClient);
+        bot.ConfigureCommands();
 
-JsonSerializerOptions jsonOpt = new JsonSerializerOptions()
-{ DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
+        return bot;
+    });
 
-Console.WriteLine("Started - " + bot.GetMeAsync().Result.FirstName);
+builder.Services.AddScoped<HandleUpdateService>();
 
-var cts = new CancellationTokenSource();
-var cancellationToken = cts.Token;
-var receiverOptions = new ReceiverOptions
-{ AllowedUpdates = new[] { UpdateType.Message } };
+builder.Services.AddSingleton<IChatRepo<IChatJob>>(x => 
+    new ChatJobRepo(botConfig.MaxTasksLifeTimeSec, botConfig.MaxTaskProcessTimeoutSec));
+builder.Services.AddSingleton<ICommandsFactory, CommandsFactory>();
 
-bot.StartReceiving(
-    HandleUpdateAsync,
-    HandleErrorAsync,
-    receiverOptions,
-    cancellationToken
-);
-//Infinite wait
-await Task.Delay(Timeout.Infinite).ConfigureAwait(false);
+builder.Services.AddControllers().AddNewtonsoftJson();
 
-async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
-{
-    Console.WriteLine(JsonSerializer.Serialize(update.Message, jsonOpt));
+var app = builder.Build();
 
-    if (update.Message.Document is not null)
-        Task.Run(() => new DocumentHandler().Handle(botClient, update, chats, cancellationToken));
+app.UseHttpsRedirection();
 
-    else if (update.Message.Text is not null)
-        Task.Run(() => new MessageHandler().Handle(botClient, update, chats, cancellationToken));
+app.UseAuthorization();
 
-    return;
-}
+app.MapControllers();
 
-static async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception,
-    CancellationToken cancellationToken) =>
-    Console.WriteLine(exception);
+app.Run();

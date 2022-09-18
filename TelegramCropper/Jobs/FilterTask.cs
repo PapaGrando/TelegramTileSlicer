@@ -1,14 +1,14 @@
 ﻿using SixLabors.ImageSharp.Processing;
 using TelegramCropper.Interfaces;
 
-namespace TelegramCropper.Tasks
+namespace TelegramCropper.Jobs
 {
-    public record FilterTask : IFilterTask
+    public record FilterJob : IFilterJob
     {
         public string Name { get; init; }
         public Action<IImageProcessingContext> FilterAction { get; init; }
 
-        public FilterTask(string name, Action<IImageProcessingContext> filterAction)
+        public FilterJob(string name, Action<IImageProcessingContext> filterAction)
         {
             Name = name;
             FilterAction = filterAction;

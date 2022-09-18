@@ -24,7 +24,7 @@
 
     public class ChatTaskArgumentsException : ChatTaskException
     {
-        public ChatTaskArgumentsException(string mes) : base(mes) { }
+        public ChatTaskArgumentsException(string m) : base(m) { }
     }
 
     public class ChatTaskBusyException : ChatTaskException
