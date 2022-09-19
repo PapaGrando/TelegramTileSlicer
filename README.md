@@ -1,5 +1,5 @@
 # TelegramTileSlicer
-*Telegram bot for tilesets slicing. With filters. Uses Long Polling*
+*Telegram bot for tilesets slicing. With filters. Uses ~Long Polling~ WebHooks*
 <br><br>
 ![photo_2022-04-17_09-00-481](https://user-images.githubusercontent.com/36087533/164165261-6b0c9dd9-4733-440f-ac87-03468f56c756.jpg)
 <br><br>
