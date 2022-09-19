@@ -6,5 +6,6 @@
         public int MaxTasksLifeTimeSec { get; init; }
         public int MaxTaskProcessTimeoutSec { get; init; }
         public string? HostAddress { get; init; }
+        public bool RemoveWebhookOnStopApp { get; init; }
     }
 }
