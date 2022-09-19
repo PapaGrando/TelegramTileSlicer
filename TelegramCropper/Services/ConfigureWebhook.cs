@@ -5,6 +5,8 @@ namespace TelegramCropper.Services;
 
 public class ConfigureWebhook : IHostedService
 {
+    public bool RemoveWebhookOnStop { get => _botConfig.RemoveWebhookOnStopApp; }
+
     private readonly ILogger<ConfigureWebhook> _logger;
     private readonly IServiceProvider _services;
     private readonly Config _botConfig;
@@ -38,6 +40,9 @@ public class ConfigureWebhook : IHostedService
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
+        if (!RemoveWebhookOnStop)
+            return;
+
         using var scope = _services.CreateScope();
         var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
 
@@ -45,4 +50,6 @@ public class ConfigureWebhook : IHostedService
         _logger.LogInformation("Removing webhook");
         await botClient.DeleteWebhookAsync(cancellationToken: cancellationToken);
     }
+
+
 }
