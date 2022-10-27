@@ -31,10 +31,9 @@ namespace TelegramCropper.Jobs
             imageStream.Position = 0;
             using (var image = Image.Load(imageStream, new PngDecoder()))
             {
-                FixTileTask(tiletask);
+                FixTileJobSizes(tiletask);
 
-                if (image.Height < tiletask.Height ||
-                    image.Width < tiletask.Width)
+                if (image.Height < tiletask.Height || image.Width < tiletask.Width)
                     throw new ChatTaskArgumentsException("Image must be bigger than tile-slice");
 
                 foreach (var action in filtersQueue)
@@ -44,15 +43,11 @@ namespace TelegramCropper.Jobs
 
                     image.Mutate(action.FilterAction);
                 }
-
-                var tileDir = $"{_tempDir}{_imgSubFolderName}/";
-
-                if (Directory.Exists(_tempDir))
-                    Directory.Delete(_tempDir, true);
-
-                Directory.CreateDirectory(tileDir);
-                SliceAndSaveInTempDir(image, _nameId, tileDir, tiletask);
+                
+                var tempDir = CreateTempDir();
+                SliceAndSaveInTempDir(image, _nameId, tempDir, tiletask);
             }
+
             var distPath = CompressFiles($"{_tempDir}{_imgSubFolderName}/", _tempDir);
             var memStr = new MemoryStream();
 
@@ -62,21 +57,39 @@ namespace TelegramCropper.Jobs
             return memStr;
         }
 
-        private List<(int X, int Y, int Width, int Height)> CalcCropRects(
+        private List<CropContainer> CalcCropRects(
             Image img,
             (int Height, int Width) sizes)
         {
-            var cutPosList = new List<(int X, int Y, int Width, int Height)>();
+            var cutPosList = new List<CropContainer>();
 
             for (int x = 0; x <= img.Width - sizes.Width; x += sizes.Width)
-                for (int y = 0; y <= img.Height - sizes.Height; y += sizes.Height)
-                    cutPosList.Add((x, y, sizes.Width, sizes.Height));
+            for (int y = 0; y <= img.Height - sizes.Height; y += sizes.Height)
+                cutPosList.Add(new CropContainer
+                {
+                    X = x,
+                    Y = y,
+                    Height = sizes.Height,
+                    Width = sizes.Width
+                });
 
             return cutPosList;
         }
 
-        private void SliceAndSaveInTempDir(Image img, string chatId,
-            string dirPath, TileJob tileTask)
+        private string CreateTempDir()
+        {
+            var dirPath = $"{_tempDir}{_imgSubFolderName}/";
+
+            if (Directory.Exists(_tempDir))
+                Directory.Delete(_tempDir, true);
+
+            Directory.CreateDirectory(dirPath);
+
+            return dirPath;
+        }
+
+        private void SliceAndSaveInTempDir(
+            Image img, string chatId, string dirPath, TileJob tileTask)
         {
             if (tileTask.Sizes == (0, 0))
             {
@@ -92,26 +105,28 @@ namespace TelegramCropper.Jobs
 
             //TODO : Очень тяжело GC и файловой системе. Зарефакторить
             foreach (var pos in rects)
-                using (var tile = img.Clone(x => x.Crop(new Rectangle(pos.X, pos.Y, pos.Width, pos.Height))))
-                {
-                    if (_cansTok.IsCancellationRequested)
-                        throw new ChatTaskTimeoutException();
-
-                    tile.SaveAsPng($"{dirPath}{iName}.png");
-                    iName++;
-                }
-        }
-
-        private TileJob FixTileTask(TileJob tt)
-        {
-            if (tt.Height == 0 ||
-                tt.Width == 0)
+            using (var tile = img.Clone(x => x.Crop(new Rectangle(pos.X, pos.Y, pos.Width, pos.Height))))
             {
-                var maxVal = Math.Max(tt.Width, tt.Height);
-                tt.Sizes = (maxVal, maxVal);
+                if (_cansTok.IsCancellationRequested)
+                    throw new ChatTaskTimeoutException();
+            
+                tile.SaveAsPng($"{dirPath}{iName}.png");
+                iName++;
             }
-            return tt;
         }
+
+        private TileJob FixTileJobSizes(TileJob tj)
+        {
+            if (tj.Height == 0 ||
+                tj.Width == 0)
+            {
+                var maxVal = Math.Max(tj.Width, tj.Height);
+                tj.Sizes = (maxVal, maxVal);
+            }
+
+            return tj;
+        }
+
         private string CompressFiles(string target, string dest)
         {
             if (_cansTok.IsCancellationRequested)
@@ -120,6 +135,14 @@ namespace TelegramCropper.Jobs
             var filePath = $"{dest}{_zipNameEnds}";
             ZipFile.CreateFromDirectory(target, filePath);
             return filePath;
+        }
+
+        private record CropContainer
+        {
+            public int X;
+            public int Y;
+            public int Width;
+            public int Height;
         }
 
         #region dispose

@@ -30,10 +30,10 @@ public class HandleUpdateService
         {
 #pragma warning disable CS4014, CS8602
 
-            if (update.Message.Document is not null)
+        if (update.Message.Document is not null)
                 Task.Run(() => new DocumentHandler().Handle(_botClient, update, _chats, cancellationToken));
 
-            else if (update.Message.Text is not null)
+        else if (update.Message.Text is not null)
                 Task.Run(() => new MessageHandler(_commandsFactory)
                 .Handle(_botClient, update, _chats, cancellationToken));
 
